@@ -1,0 +1,7 @@
+Build
+Build.PL
+lib/TAP/Harness/Spinner.pm
+lib/TAP/Spinner.pm
+MANIFEST
+MANIFEST.SKIP
+spinner

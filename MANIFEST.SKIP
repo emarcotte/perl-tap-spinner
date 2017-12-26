@@ -1,0 +1,16 @@
+^MYMETA\.yml$
+^MYMETA\.json$
+^MANIFEST\.bak$
+
+# git noise
+\B\.git
+
+# _build artifacts?
+^_build/
+^blib/
+
+# Hack for dependecies :(
+^deps/
+
+# Vim noise
+^.*[.]sw.$

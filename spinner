@@ -1,0 +1,12 @@
+#!/usr/local/bin/perl
+
+use strict;
+use warnings;
+
+use TAP::Spinner;
+
+use utf8;
+binmode(STDOUT, ':utf8');
+
+TAP::Spinner->new()->go(@ARGV);
+
