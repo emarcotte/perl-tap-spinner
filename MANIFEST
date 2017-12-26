@@ -1,7 +1,7 @@
+bin/spinner
 Build
 Build.PL
 lib/TAP/Harness/Spinner.pm
 lib/TAP/Spinner.pm
-MANIFEST
+MANIFEST			This list of files
 MANIFEST.SKIP
-spinner
