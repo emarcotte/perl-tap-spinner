@@ -21,7 +21,7 @@ my $spinner_chars = '⣾⣽⣻⢿⡿⣟⣯⣷';
 
 sub new {
 	return bless {
-		current_message => '',
+		current_message => 'Spinner!!',
 		current_spinner => 0,
 		running_test    => 0,
 	}, __PACKAGE__;
@@ -126,7 +126,9 @@ sub go {
 
 	my $cui = $self->{cui} = Curses::UI::AnyEvent->new(
 		-color_support => 1,
-		-clear_on_exit => 1,
+		-clear_on_exit => 0,
+		-compat        => 0,
+		-mouse_support => 1,
 	);
 
 	$cui->set_binding(sub { exit; }, "\cC");
@@ -135,7 +137,7 @@ sub go {
 
 	my $status_line = $self->{status_line} = $win->add(
 		'label',       => 'Label',
-		-text          => 'A bit of text',
+		-text          => '',
 		-width         => -1,
 	);
 
@@ -143,9 +145,12 @@ sub go {
 		'mytextviewer', 'TextViewer',
 		-padtop => 1,
 		-text   => "",
+		-vscrollbar => 1,
 	);
 
 	$textviewer->focus();
+
+	$self->show_header();
 
 	# start the event loop
 	eval {

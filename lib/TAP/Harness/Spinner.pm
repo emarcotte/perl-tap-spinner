@@ -46,6 +46,9 @@ sub make_parser {
 			}
 			elsif($result->is_ok) {
 				$self->{pass}++;
+				'──';
+				'✔ unindent › [anonymous]';
+				'2 tests passed [10:33:14]';
 			}
 			else {
 				$self->{fail}++;
@@ -59,6 +62,8 @@ sub make_parser {
 	$parser->callback(
 		ALL => sub {
 			my ($result) = @_;
+			use Data::Dumper;
+			$self->output(Data::Dumper::Dumper($result));
 			$self->output($result->raw());
 		}
 	);
