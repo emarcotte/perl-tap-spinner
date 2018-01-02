@@ -5,10 +5,15 @@ package my_formatter;
 use strict;
 use warnings;
 
+use FindBin;
+use lib "$FindBin::Bin/deps/lib/perl5";
+
 use Test::Builder;
 use Test2::API qw(intercept test2_stack);
 use File::Basename qw();
 use File::Slurp;
+
+#banner();
 
 foreach my $file (@ARGV) {
 	run($file);
@@ -18,14 +23,20 @@ sub run {
 	my ($file) = @_;
 	my $stack = test2_stack();
 
-	my $hub = $stack->new_hub(
-		formatter => my_formatter->new(file => $file),
+	my $formatter = my_formatter->new(
+		file => $file,
+		verbose => 1,
 	);
 
-	print "望\n";
+	my $hub = $stack->new_hub(
+		formatter => $formatter,
+	);
 
 	do $file;
+
 	print "$@" if $@;
+
+	$formatter->wrapup();
 
 	$stack->pop($hub);
 }
@@ -35,9 +46,11 @@ sub new {
 	my $file = $args{file};
 
 	return bless {
-		parents => [],
 		basename => File::Basename::basename($file),
-		file => $file,
+		file     => $file,
+		parents  => [],
+		verbose  => $args{verbose},
+		current_failure => undef,
 	}, $class;
 }
 
@@ -63,22 +76,33 @@ sub write {
 			my $pass = $event->effective_pass;
 			my $f = $event->facets;
 			my $test_name = $event->name || '[anon]';
+			$self->{current_failure} = $pass ? undef : $event;
+
+			$self->{tests}++;
+			if($pass) {
+				$self->{passed}++;
+			}
+			else {
+				$self->{fail}++;
+			}
 
 			if($is_subtest) {
 				pop(@{$self->{parents}});
 			}
 
 			if($pass) {
-				print "  ",
-					color(0, 28, "✔"),
-					" ",
-					join(
-						color(0, 238,  " ≻ "),
-						$self->{basename},
-						@{$self->{parents}},
-						$test_name,
-					),
-					"\n";
+				if($self->{verbose}) {
+					print "  ",
+						color(0, 28, "✔"),
+						" ",
+						join(
+							color(0, 238,  " ≻ "),
+							$self->{basename},
+							@{$self->{parents}},
+							$test_name,
+						),
+						"\n";
+				}
 			}
 			else {
 				print "  ",
@@ -139,8 +163,38 @@ sub write {
 	print "$@" if $@;
 }
 
+sub banner {
+print color(0, 120, "
+         #
+         #      ######
+      ########  #    #
+       #        ######
+       #        #    #
+       #       #######
+       #       #    #
+        ##### #     #
+             #   ###
+      
+       ###############
+              #
+              #
+        #############
+              #
+              #
+      #################\n");
+}
+
 sub new_root {}
 sub terminate {}
 
-sub finalize { }
+sub finalize {}
+
+sub wrapup {
+	my ($self) = @_;
+
+	printf "\n  %s (passed %d of %d)\n",
+		File::Basename::basename($self->{file}),
+		$self->{passed},
+		$self->{tests};
+}
 
