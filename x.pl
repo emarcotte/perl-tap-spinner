@@ -12,8 +12,14 @@ use Test::Builder;
 use Test2::API qw(intercept test2_stack);
 use File::Basename qw();
 use File::Slurp;
+use Getopt::Long;
 
 #banner();
+GetOptions(
+	'test-filter=s@' => \(my $test_filters),
+	'verbose'        => \(my $verbose = 0),
+	'watch'          => \(my $watch   = 0),
+) or exit(1);
 
 foreach my $file (@ARGV) {
 	run($file);
@@ -25,7 +31,7 @@ sub run {
 
 	my $formatter = my_formatter->new(
 		file => $file,
-		verbose => 1,
+		verbose => $verbose,
 	);
 
 	my $hub = $stack->new_hub(
@@ -51,6 +57,9 @@ sub new {
 		parents  => [],
 		verbose  => $args{verbose},
 		current_failure => undef,
+		passed   => 0,
+		tests    => 0,
+		faild    => 0,
 	}, $class;
 }
 
@@ -116,6 +125,10 @@ sub write {
 					),
 					"\n";
 
+					print Data::Dumper::Dumper(
+						$event
+
+					);
 				my $fail_line = $event->trace->frame->[2];
 				my $fail_file = $event->trace->frame->[1];
 				my @fail_lines = splice(
@@ -151,6 +164,8 @@ sub write {
 		elsif($event->isa('Test2::Event::Diag')) {
 			# TODO: Hack these are meaningless diag :(
 			if($event->message !~ /Failed test/) {
+				use Data::Dumper;
+				print Data::Dumper::Dumper($event);
 				print "    Message:\n\n";
 
 				print map { "      " . $_ . "\n" } split(/\n/, $event->message);
